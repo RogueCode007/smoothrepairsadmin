@@ -4,40 +4,54 @@
       <CCol sm='12' md='6'>
         <CCard>
           <CCardHeader>
-            About Serviceman
+            About Customer
           </CCardHeader>
           <CCardBody>
             <div>
               <strong>Name</strong>
-              <p>{{serviceman.name}}</p>
+              <p>{{customer.name}}</p>
             </div>
             <div>
               <strong>Phone number</strong>
-              <p>{{serviceman.phone_number}}</p>
+              <p>{{customer.phone_number}}</p>
             </div>
             <div>
               <strong>Address</strong>
-              <p>{{serviceman.address}}</p>
+              <p>{{customer.address}}</p>
             </div>
             <div>
-              <strong>Status</strong>
-              <CBadge :color="getBadge(serviceman.status)" style="padding: 8px; margin-left: 10px">{{serviceman.status}}</CBadge>
+              <strong>Email Address</strong>
+              <p>{{customer.email}}</p>
             </div>
+            <div>
+              <strong>Date Joined</strong>
+              <p>{{customer.date_joined}}</p>
+            </div>
+            
           </CCardBody>
         </CCard>
       </CCol>
       <CCol sm='12' md='6'>
         <CCard>
-          <CCardHeader>Jobs</CCardHeader>
+          <CCardHeader>Orders</CCardHeader>
           <CCardBody>
             <CListGroup accent>
               <CListGroupItem color="secondary" 
-              v-for="job in serviceman.jobs" 
-              :key="job.id"
-              :accent="getAccent(job.status)"
+              v-for="order in customer.orders" 
+              :key="order.id"
+              :accent="getAccent(order.status)"
               >
-              <p>{{job.order_date}}</p>
-              {{job.service}} for {{job.customer_name}} <router-link to='/orders/1'>view job</router-link>
+              <div style="display:flex; justify-content: space-between">
+                <div>
+                  <strong>{{order.order_date}}</strong>
+                  <CBadge :color="getBadge(order.status)" style="padding: 8px; display: block">{{order.status}}</CBadge>
+                </div>
+                <div>
+                  <p v-if="order.customer_name == null">Unsassigned</p>
+                  <p v-else>Assigned to: <CLink to='/servicemen/1'>{{order.customer_name}}</CLink></p>
+                  <CLink to="/orders/2" style="display: block">View Orders</CLink>
+                </div>
+              </div>
               </CListGroupItem>
             </CListGroup>
           </CCardBody>
@@ -49,18 +63,23 @@
 </template>
 
 <script>
+const servicemen = [
+  'Jide', 'Taiwo', "Gbenga", 'George'
+]
 
 export default {
   data(){
     return{
-      serviceman: {
-        name: 'Jide Francis',
+      servicemen: servicemen,
+      customer: {
+        name: 'Obiwan',
         phone_number: '08036738733',
         address: 'Plot 256, Arike Ade Street, Downtown',
-        status: 'Active',
-        jobs: [
+        email: 'obiwan@gmail.com',
+        date_joined: '2019/12/25',
+        orders: [
           {'id':1, 'order_date': '2020/1/3','order_number': 234, 'customer_name': 'Francis Odeku', 'customer_number': '08467723987', 'status': 'Delivered', 'amount_paid': 3000, 'service': 'A/C repairs'},
-          {'id':2, 'order_date': '2020/12/15','order_number': 234, 'customer_name': 'Nakamato', 'customer_number': '08467723987', 'status': 'Pending', 'amount_paid': 3000, 'service': 'A/C repairs'},
+          {'id':2, 'order_date': '2020/12/15','order_number': 234, 'customer_name': null, 'customer_number': '08467723987', 'status': 'Pending', 'amount_paid': 3000, 'service': 'A/C repairs'},
           {'id':3, 'order_date': '2021/02/23', 'order_number': 234, 'customer_name': 'Orichimaru', 'customer_number': '08467723987', 'status': 'Pending', 'amount_paid': 3000, 'service': 'A/C repairs'},
           {'id':4, 'order_date': '2021/03/5', 'order_number': 234, 'customer_name': 'Kakashi', 'customer_number': '08467723987', 'status': 'Delivered', 'amount_paid': 3000, 'service': 'A/C repairs'}
         ]
@@ -70,10 +89,9 @@ export default {
   methods:{
     getBadge(str){
       switch(str){
-        case 'Active':
-        return 'primary'
-        case 'Inactive' :
-         return 'secondary'
+        case 'Delivered':
+        return 'success'
+        default: return 'warning'
       }
     },
     getAccent(str){

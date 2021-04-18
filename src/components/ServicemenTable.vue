@@ -13,7 +13,7 @@
     >
     <template #name="{item}">
       <td>
-        <router-link :to="{ name: 'serviceman', params: { id: item.id }}">{{item.name}}</router-link>
+        <CLink :to="{ name: 'serviceman', params: { id: item.id }}">{{item.name}}</CLink>
       </td>
     </template>
       <template #status="{item}">

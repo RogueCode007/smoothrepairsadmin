@@ -18,7 +18,12 @@
           </CBadge>
         </td>
       </template>
-      <template #show_details="{item, index}">
+      <template #view>
+        <td class="py-2">
+          <CLink to='/orders/2'>View</CLink>
+        </td>
+      </template>
+      <!-- <template #show_details="{item, index}">
         <td class="py-2">
           <CButton
             color="primary"
@@ -31,6 +36,7 @@
           </CButton>
         </td>
       </template>
+      
       <template #details="{item}">
         <CCollapse :show="Boolean(item._toggled)" :duration="collapseDuration">
           <CCardBody>
@@ -52,7 +58,7 @@
                     class="mr-2 ">
                     <CDropdownItem v-for="serviceman in servicemen" :key="serviceman.id">{{serviceman}}</CDropdownItem>
                   </CDropdown>
-                  <p v-else>Assigned to: <CLink to='/'>{{item.serviceman}}</CLink></p>
+                  <p v-else>Assigned to: <CLink to='/servicemen/1'>{{item.serviceman}}</CLink></p>
                 </div>
                 <div>
                   <CButton size="sm" color="success">Generate invoice</CButton>
@@ -63,7 +69,7 @@
               </div>
           </CCardBody>
         </CCollapse>
-      </template>
+      </template> -->
     </CDataTable>
     <CModal
       title="Are you sure?"
@@ -81,9 +87,6 @@
 
 <script>
 import ordersData from '@/views/users/OrderData'
-const servicemen = [
-  'Jide', 'Taiwo', "Gbenga", 'George'
-]
 
 const fields = [
   { key: 'service', _style:'min-width:30%' },
@@ -91,16 +94,12 @@ const fields = [
   { key: 'customer_name', _style:'min-width:15%;' },
   { key: 'customer_number', _style:'min-width:15%;' },
   { key: 'customer_address', _style:'min-width:15%;' },
-  { key: 'status', _style:'min-width:10%;' },
   { 
     key: 'amount', 
     _style: 'min-width:1%'
   },
-  { 
-    key: 'show_details', 
-    label: '', 
-    _style: 'min-width:1%'
-  },
+  { key: 'status', _style:'min-width:10%;' },
+  {key: 'view', label: ''}
   
 ]
 
@@ -111,7 +110,6 @@ export default {
       fields,
       details: [],
       collapseDuration: 0,
-      servicemen: servicemen,
       dangerModal: false
     }
   },

@@ -15,9 +15,11 @@ const Register = () => import('@/views/pages/Register')
 
 
 const Order = () => import('@/views/orders/Order')
+const OrderDetails = () => import('@/views/orders/OrderDetails')
 const Servicemen = () => import('@/views/servicemen/Servicemen')
 const SingleServiceman = () => import('@/views/servicemen/SingleServiceman')
 const Customers = () => import('@/views/customers/Customers')
+const SingleCustomer = () => import('@/views/customers/SingleCustomer')
 const Settings = () => import('@/views/Settings')
 const Costing = () => import('@/views/costing/Costing')
 
@@ -42,7 +44,6 @@ export default new Router({
         },
         {
           path: 'orders',
-         
           component: {
             render (c) { return c('router-view') }
           },
@@ -51,6 +52,11 @@ export default new Router({
               name: 'Orders',
               path: '',
               component: Order
+            },
+            {
+              name: 'order',
+              path: '/orders/:id',
+              component: OrderDetails
             }
           ]
         },
@@ -74,8 +80,21 @@ export default new Router({
         },
         {
           path: 'customers',
-          name: 'Customers',
-          component: Customers
+          component: {
+            render (c) { return c('router-view') }
+          },
+          children: [
+            {
+              name: 'Customers',
+              path: '',
+              component: Customers
+            },
+            {
+              name: 'customer',
+              path: '/customers/:id',
+              component: SingleCustomer
+            }
+          ]
         },
         {
           path: 'settings',
