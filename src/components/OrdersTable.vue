@@ -18,60 +18,15 @@
           </CBadge>
         </td>
       </template>
-      <template #view>
+      <template #view="{item}">
         <td class="py-2">
-          <CLink to='/orders/2'>View</CLink>
-        </td>
-      </template>
-      <!-- <template #show_details="{item, index}">
-        <td class="py-2">
-          <CButton
-            color="primary"
-            variant="outline"
-            square
-            size="sm"
-            @click="toggleDetails(item, index)"
-          >
-            {{Boolean(item._toggled) ? 'Less' : 'More'}}
+          <CButton size="sm" color="primary" class="ml-3" @click="showOrderModal(item)">
+            View
           </CButton>
         </td>
       </template>
-      
-      <template #details="{item}">
-        <CCollapse :show="Boolean(item._toggled)" :duration="collapseDuration">
-          <CCardBody>
-              <h4 style="margin-bottom:20px">
-                Order Details
-              </h4>
-              <div style="display:flex; justify-content:space-between">
-                <div>
-                  <p>Order Number: {{item.order_number}}</p>
-                  <p>Customer: {{item.customer_name}}</p>
-                  <p>Phone-number: {{item.customer_number}}</p>
-                  <p class="text-muted">Ordered on: {{item.order_date}}</p>
-                  
-                  <CDropdown v-if="item.serviceman == null"
-                    style="display: block; margin-bottom: 10px"
-                    size="sm"
-                    toggler-text="Assign Serviceman"
-                    color="primary"
-                    class="mr-2 ">
-                    <CDropdownItem v-for="serviceman in servicemen" :key="serviceman.id">{{serviceman}}</CDropdownItem>
-                  </CDropdown>
-                  <p v-else>Assigned to: <CLink to='/servicemen/1'>{{item.serviceman}}</CLink></p>
-                </div>
-                <div>
-                  <CButton size="sm" color="success">Generate invoice</CButton>
-                  <CButton size="sm" color="danger" class="ml-3" @click="dangerModal = true">
-                    Delete
-                  </CButton>
-                </div>
-              </div>
-          </CCardBody>
-        </CCollapse>
-      </template> -->
     </CDataTable>
-    <CModal
+    <!-- <CModal
       title="Are you sure?"
       color="danger"
       :show.sync="dangerModal"
@@ -80,6 +35,59 @@
       <template #footer>
         <CButton @click="dangerModal = false" color="secondary">Cancel</CButton>
         <CButton @click="dangerModal = false" color="danger">Delete</CButton>
+      </template>
+    </CModal> -->
+    <CModal
+      :color="getBadge(order.status)"
+      title="Order details"
+      size="lg"
+      :show.sync="orderModal"
+    > 
+    <CRow>
+      <CCol>
+        <div>
+          <strong>Order type</strong>
+          <p>{{order.service}}</p>
+        </div>
+        <div>
+          <strong>Customer Name</strong>
+          <p>{{order.customer_name}}</p>
+        </div>
+        <div>
+          <strong>Customer phone number</strong>
+          <p>{{order.customer_number}}</p>
+        </div>
+      </CCol>
+      <CCol>
+        <div>
+          <strong>Order date</strong>
+          <p>{{order.order_date}}</p>
+        </div>
+        <div>
+          <strong>Total amount</strong>
+          <p>#{{order.amount}}</p>
+        </div>
+        <div v-if="order.serviceman != null">
+          <strong>Serviceman:</strong>
+          <p>{{order.serviceman}}</p>
+        </div>
+        <div v-else>
+          <strong>Unassigned</strong>
+          <CDropdown 
+            style="display: block; margin-top: 10px"
+            size="sm"
+            toggler-text="Assign Serviceman"
+            color="primary"
+            v-model="serviceman"
+            @change="assignServiceman($event)"
+          >
+            <CDropdownItem v-for="serviceman in servicemen" :key="serviceman.id">{{serviceman}}</CDropdownItem>
+          </CDropdown>
+        </div>
+      </CCol>
+    </CRow>
+      <template #footer>
+        <CButton @click="orderModal = false" color="secondary">Cancel</CButton>
       </template>
     </CModal>
   </CCardBody>
@@ -110,7 +118,11 @@ export default {
       fields,
       details: [],
       collapseDuration: 0,
-      dangerModal: false
+      dangerModal: false,
+      orderModal: false,
+      servicemen: ['Jide', 'Wale', 'Obiwan', 'Alfred'],
+      order : {},
+      serviceman: ''
     }
   },
   methods: {
@@ -120,6 +132,15 @@ export default {
         case 'Pending': return 'warning'
         default: 'primary'
       }
+    },
+    showOrderModal(item){
+      this.orderModal = true
+      this.order = item;
+    },
+    assignServiceman(event){
+      console.log(event.target.value)
+       console.log(this.serviceman);
+       console.log(this.order)
     },
     toggleDetails (item) {
       this.$set(this.ordersData[item.id], '_toggled', !item._toggled)

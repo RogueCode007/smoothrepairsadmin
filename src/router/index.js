@@ -6,14 +6,6 @@ const TheContainer = () => import('@/containers/TheContainer')
 
 // Views
 const Dashboard = () => import('@/views/Dashboard')
-
-// Views - Pages
-const Page404 = () => import('@/views/pages/Page404')
-const Page500 = () => import('@/views/pages/Page500')
-const Login = () => import('@/views/pages/Login')
-const Register = () => import('@/views/pages/Register')
-
-
 const Order = () => import('@/views/orders/Order')
 const OrderDetails = () => import('@/views/orders/OrderDetails')
 const Servicemen = () => import('@/views/servicemen/Servicemen')
@@ -22,6 +14,7 @@ const Customers = () => import('@/views/customers/Customers')
 const SingleCustomer = () => import('@/views/customers/SingleCustomer')
 const Settings = () => import('@/views/Settings')
 const Costing = () => import('@/views/costing/Costing')
+const Login = () => import('@/views/pages/Login')
 
 
 Vue.use(Router)
@@ -112,31 +105,6 @@ export default new Router({
       path: '/app/login',
       name: 'Login',
       component: Login
-    },
-    {
-      path: '/pages',
-      redirect: '/pages/404',
-      name: 'Pages',
-      component: {
-        render (c) { return c('router-view') }
-      },
-      children: [
-        {
-          path: '404',
-          name: 'Page404',
-          component: Page404
-        },
-        {
-          path: '500',
-          name: 'Page500',
-          component: Page500
-        },
-        {
-          path: 'register',
-          name: 'Register',
-          component: Register
-        }
-      ]
     }
   ]
 })

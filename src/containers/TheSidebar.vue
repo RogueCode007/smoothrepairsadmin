@@ -20,10 +20,10 @@
       <p style="font-size: 1.8em" class="ml-2">Smooth Repairs</p>
     </CSidebarBrand>
     <CRenderFunction flat :contentToRender="sidebarItems"/>
-    <CSidebarMinimizer
+    <!-- <CSidebarMinimizer
       class="c-d-md-down-none"
       @click.native="$store.commit('toggle', 'sidebarMinimize')"
-    />
+    /> -->
   </CSidebar>
 </template>
 
