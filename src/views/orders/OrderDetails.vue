@@ -23,11 +23,22 @@
             <strong>Order date</strong>
             <p>{{order.date}}</p>
           </div>
-          <div v-if="order.serviceman != null">
+          <div v-if="order.serviceman !== null">
             <strong>Serviceman:</strong>
             <p>{{order.serviceman}}</p>
           </div>
-          <strong v-else>Unassigned</strong>
+          <div v-else>
+            <strong>Unassigned</strong>
+            <CDropdown v-if="order.serviceman == null"
+              style="display: block; margin-top: 10px"
+              size="sm"
+              toggler-text="Assign Serviceman"
+              color="primary"
+              class="mr-2 "
+              v-model='newserviceman'>
+              <CDropdownItem v-for="serviceman in servicemen" :key="serviceman.id" >{{serviceman}}</CDropdownItem>
+            </CDropdown>
+          </div>
         </CCardBody>
       </CCard>
     </CCol>
@@ -38,16 +49,8 @@
             <strong>Satus</strong>
             <CBadge :color="getBadge(order.status)" style="padding: 8px; margin-left: 10px">{{order.status}}</CBadge>
           </div>
-          <CDropdown v-if="order.serviceman == null"
-            style="display: block; margin-bottom: 10px"
-            size="sm"
-            toggler-text="Assign Serviceman"
-            color="primary"
-            class="mr-2 "
-            v-model='newserviceman'>
-            <CDropdownItem v-for="serviceman in servicemen" :key="serviceman.id" >{{serviceman}}</CDropdownItem>
-          </CDropdown>
-          <div>
+          
+          <div class="mt-3">
             <CButton size="sm" color="success">Generate invoice</CButton>
             <CButton size="sm" color="danger" class="ml-3" @click="dangerModal = true">
               Delete
@@ -86,7 +89,7 @@ export default {
         customer_name: 'Franco Martin', 
         customer_number: '0903234678', 
         date: '2012/03/24',
-        serviceman: 'null',
+        serviceman: null,
         status: 'Pending'
       }
     }

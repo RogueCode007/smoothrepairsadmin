@@ -1,7 +1,7 @@
 <template>
   <CCardBody>
     <CDataTable
-      :items="servicemen"
+      :items="servicemenData.serviceMan"
       :fields="fields"
       items-per-page-select
       :items-per-page="5"
@@ -13,13 +13,23 @@
     >
     <template #name="{item}">
       <td>
-        <CLink :to="{ name: 'serviceman', params: { id: item.id }}">{{item.name}}</CLink>
+        <CLink :to="{ name: 'serviceman', params: { id: item._id }}">{{item.name}}</CLink>
       </td>
     </template>
-      <template #status="{item}">
-        <td>
-          <CBadge :color="getBadge(item.status)" style="padding: 8px">
-            {{item.status}}
+    <template #jobs="{item}">
+      <td>
+        {{item.jobs.length}}
+      </td>
+    </template>
+      <template #active_status="{item}">
+        <td v-if="item.active_status">
+          <CBadge color="success" style="padding: 8px">
+            Active
+          </CBadge>
+        </td>
+        <td v-else>
+          <CBadge color="secondary" style="padding: 8px">
+            Inactive
           </CBadge>
         </td>
       </template>
@@ -28,49 +38,33 @@
 </template>
 
 <script>
-const servicemen = [
-  {id: 1, name: 'Jido', number: '08097545678', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', status: 'Active', jobs: 9,  },
-  {id: 2,name: 'Jide', number: '08097545678', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', status: 'Active', jobs: 7,  },
-  {id: 3, name: 'Jide', number: '08097545678', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', status: 'Inactive', jobs: 6,  },
-  {id: 4, name: 'Jide', number: '08097545678', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', status: 'Active', jobs: 3,  },
-  {id: 5, name: 'Jide', number: '08097545678', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', status: 'Inactive', jobs: 0,  },
-  {id: 6, name: 'Jide', number: '08097545678', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', status: 'Active', jobs:9  },
-  {id: 7, name: 'Jide', number: '08097545678', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', status: 'Active', jobs: 6,  },
-  {id: 8, name: 'Jide', number: '08097545678', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', status: 'Active', jobs: 1,  },
-  {id: 9, name: 'Jide', number: '08097545678', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', status: 'Active', jobs: 1,  }
-  
-]
-
+import axios from 'axios'
+import url from '@/main'
 const fields = [
   { key: 'name', _style:'min-width:30%' },
-  { key: 'number',label:'Phone Number', _style:'min-width:20%;' },
+  { key: 'phone',label:'Phone Number', _style:'min-width:20%;' },
   { key: 'address', _style:'min-width:20%;' },
   { key: 'jobs', label: 'No of Jobs done'},
-  { key: 'status', _style:'min-width:10%;' },
-  // { 
-  //   key: 'show_details', 
-  //   label: '', 
-  //   _style: 'min-width:1%'
-  // },
+  { key: 'active_status', _style:'min-width:10%;', label: 'Status' },
   
 ]
 
 export default {
   data () {
     return {
-      servicemen: servicemen.map((item, index) => { return {...item, index}}),
       fields,
       details: [],
       collapseDuration: 0,
-    
+      servicemenData: {},
+      loading: true
     }
   },
   methods: {
-    getBadge (status) {
-      switch (status) {
-        case 'Active': return 'success'
-        case 'Inactive': return 'secondary'
-        default: 'primary'
+    getBadge(status) {
+      if(status){
+        return 'success'
+      }else{
+        return 'secondary'
       }
     },
     toggleDetails (item) {
@@ -78,6 +72,15 @@ export default {
       this.collapseDuration = 300
       this.$nextTick(() => { this.collapseDuration = 0})
     }
+  },
+  beforeCreate(){
+    this.$store.state.loading = true
+    axios({url: `${url}/servicemen`, method: 'GET'})
+    .then(res=>{
+      this.servicemenData = res.data
+      this.$store.state.loading = false
+      console.log(this.servicemenData)
+    })
   }
 }
 </script>

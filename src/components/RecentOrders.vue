@@ -1,7 +1,8 @@
 <template>
-  <CCardBody class="body-text">
+  <CCardBody> 
+
     <CDataTable
-      :items="ordersData"
+      :items="ordersData.orders"
       :fields="fields"
       items-per-page-select
       :items-per-page="5"
@@ -10,8 +11,28 @@
       pagination
       table-filter
       cleaner
-      
     >
+      <template #order_date="{item}">
+        <td>{{item.date_created | formateDate}}</td>
+      </template>
+      <template #customername="{item}">
+        <td v-if="item.customer">
+          <router-link :to="{ name: 'customer', params: { id: item.customer._id }}">{{item.customer.fullname}}</router-link> 
+        </td>
+        <td v-else>No customer</td>
+      </template>
+      <template #customernumber="{item}">
+        <td v-if="item.customer">{{item.customer.phone}}</td>
+        <td v-else>None</td>
+      </template>
+      <template #customeremail="{item}">
+        <td v-if="item.customer">{{item.customer.email}}</td>
+        <td v-else>None</td>
+      </template>
+      <template #amount="{item}">
+        <td v-if="item.service">{{item.service.price}}</td>
+        <td v-else>None</td>
+      </template>
       <template #status="{item}">
         <td>
           <CBadge :color="getBadge(item.status)" style="padding: 8px">
@@ -19,59 +40,15 @@
           </CBadge>
         </td>
       </template>
-       <template #view>
+      <template #view="{item}">
         <td class="py-2">
-          <CLink to='/orders/2'>View</CLink>
-        </td>
-      </template>
-      <!-- <template #show_details="{item, index}">
-        <td class="py-2">
-          <CButton
-            color="primary"
-            variant="outline"
-            square
-            size="sm"
-            @click="toggleDetails(item, index)"
-          >
-            {{Boolean(item._toggled) ? 'Less' : 'More'}}
+          <CButton size="sm" color="info" class="ml-3" @click="showOrderModal(item)">
+            View
           </CButton>
         </td>
       </template>
-      <template #details="{item}">
-        <CCollapse :show="Boolean(item._toggled)" :duration="collapseDuration">
-          <CCardBody>
-              <h4 style="margin-bottom:20px">
-                Order Details
-              </h4>
-              <div style="display:flex; justify-content:space-between">
-                <div>
-                  <p>Order Number: {{item.order_number}}</p>
-                  <p>Customer: {{item.customer_name}}</p>
-                  <p>Phone-number: {{item.customer_number}}</p>
-                  <p class="text-muted">Ordered on: {{item.order_date}}</p>
-                  
-                  <CDropdown v-if="item.serviceman == null"
-                    style="display: block; margin-bottom: 10px"
-                    size="sm"
-                    toggler-text="Assign Serviceman"
-                    color="primary"
-                    class="mr-2 ">
-                    <CDropdownItem v-for="serviceman in servicemen" :key="serviceman.id">{{serviceman}}</CDropdownItem>
-                  </CDropdown>
-                  <p v-else>Assigned to: <CLink to='/servicemen/2'>{{item.serviceman}}</CLink></p>
-                </div>
-                <div>
-                  <CButton size="sm" color="success">Generate invoice</CButton>
-                  <CButton size="sm" color="danger" class="ml-3" @click="dangerModal = true">
-                    Delete
-                  </CButton>
-                </div>
-              </div>
-          </CCardBody>
-        </CCollapse>
-      </template> -->
     </CDataTable>
-    <CModal
+    <!-- <CModal
       title="Are you sure?"
       color="danger"
       :show.sync="dangerModal"
@@ -81,19 +58,85 @@
         <CButton @click="dangerModal = false" color="secondary">Cancel</CButton>
         <CButton @click="dangerModal = false" color="danger">Delete</CButton>
       </template>
+    </CModal> -->
+    <CModal
+      :color="getBadge(order.status)"
+      title="Order details"
+      size="lg"
+      :show.sync="orderModal"
+    > 
+    <CRow>
+      <CCol>
+        <div>
+          <strong>Order type</strong>
+          <p>{{order.description}}</p>
+        </div>
+        <div>
+          <strong>Customer Name</strong>
+          <p v-if="order.customer">{{order.customer.fullname}}</p>
+          <p v-else>No customer</p>
+        </div>
+        <div>
+          <strong>Customer phone number</strong>
+          <p v-if="order.customer">{{order.customer.phone}}</p>
+          <p v-else>None</p>
+        </div>
+         <CDropdown 
+              style="display: block; margin-top: 20px"
+              size="sm"
+              toggler-text="Change Status"
+              color="primary"
+            >
+            <CDropdownItem @click="changeOrderStatus('pending')">Pending</CDropdownItem>
+            <CDropdownItem @click="changeOrderStatus('picked')">Picked</CDropdownItem>
+            <CDropdownItem @click="changeOrderStatus('complete')">Complete</CDropdownItem>
+            <CDropdownItem @click="changeOrderStatus('success')">Success</CDropdownItem>
+            <CDropdownItem @click="changeOrderStatus('false')">Error</CDropdownItem>
+          </CDropdown>
+      </CCol>
+      <CCol>
+        <div>
+          <strong>Order date</strong>
+          <p>{{order.date_created | formateDate}}</p>
+        </div>
+        <div>
+          <strong>Total amount</strong>
+          <p v-if='order.service'>#{{order.service.price}}</p>
+        </div>
+        <div v-if="order.serviceman != null">
+          <strong>Serviceman:</strong>
+          <p>{{order.serviceman.name}}</p>
+        </div>
+        <div v-else>
+          <strong>Unassigned</strong>
+          <CDropdown 
+            style="display: block; margin-top: 10px"
+            size="sm"
+            toggler-text="Assign Serviceman"
+            color="primary"
+            v-model="serviceman"
+          >
+            <CDropdownItem v-for="serviceman in servicemenData.serviceMan" :key="serviceman.id" @click="assignServiceman(serviceman)">{{serviceman.name}}</CDropdownItem>
+          </CDropdown> 
+        </div>
+      </CCol>
+    </CRow>
+      <template #footer>
+        <CButton @click="orderModal = false" color="secondary">Cancel</CButton>
+      </template>
     </CModal>
-  </CCardBody>
+  </CCardBody> 
 </template>
 
 <script>
-import ordersData from '@/views/users/OrderData'
-
+import axios from 'axios'
+import url from '@/main'
 const fields = [
-  { key: 'service', _style:'min-width:30%' },
+  { key: 'description', _style:'min-width:30%' },
   'order_date',
-  { key: 'customer_name', _style:'min-width:15%;' },
-  { key: 'customer_number', _style:'min-width:15%;' },
-  { key: 'customer_address', _style:'min-width:15%;' },
+  { key: 'customername', _style:'min-width:15%;', label: 'Customer Name' },
+  { key: 'customernumber', _style:'min-width:15%;', label: 'Customer Number' },
+  { key: 'customeremail', _style:'min-width:15%;' , label: 'Customer Email'},
   { 
     key: 'amount', 
     _style: 'min-width:1%'
@@ -105,27 +148,82 @@ const fields = [
 
 export default {
   data () {
-    return {
-      ordersData: ordersData.map((item, id) => { return {...item, id}}),
+    return {  
       fields,
       details: [],
+      servicemenData: {},
+      ordersData:{},
       collapseDuration: 0,
-      dangerModal: false
+      dangerModal: false,
+      orderModal: false,
+      order : {},
+      serviceman: ''
+    }
+  },
+  filters:{
+    formateDate(str){
+      var date = new Date(str);
+      var day = date.getDate();
+      var year = date.getFullYear();
+      var month = date.getMonth()+1;
+      var dateStr = year+"/"+month+"/"+day;
+      return dateStr
     }
   },
   methods: {
     getBadge (status) {
       switch (status) {
-        case 'Delivered': return 'success'
-        case 'Pending': return 'warning'
-        default: 'primary'
+        case 'success': return 'success'
+        case 'complete': return 'info'
+        case 'pending': return 'warning'
+        case 'error': return 'danger'
+        case 'picked': return 'secondary'
       }
+    },
+    showOrderModal(item){
+      this.orderModal = true
+      this.order = item;
+      console.log(this.order)
+    },
+    assignServiceman(serviceman){
+      console.log(serviceman)
+      console.log(this.order)
     },
     toggleDetails (item) {
       this.$set(this.ordersData[item.id], '_toggled', !item._toggled)
       this.collapseDuration = 300
       this.$nextTick(() => { this.collapseDuration = 0})
+    },
+    changeOrderStatus(param){
+      let data = 
+        {
+          status: param
+        }
+      axios.put(`${url}/order/changestatus/${this.order._id}`, data, {
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res=>{
+        console.log(res)
+        location.reload();
+      })
+      .catch(err=>{
+        console.log(err)
+      })
     }
+  },
+  beforeCreate(){
+    axios({url: `${url}/order`, method: 'GET'})
+    .then(res=>{
+      this.ordersData = res.data  
+    })
+  },
+  created(){
+    axios({url: `${url}/servicemen`, method: 'GET'})
+    .then(res=>{
+      this.servicemenData = res.data 
+    })
   }
 }
 </script>

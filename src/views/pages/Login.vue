@@ -1,6 +1,13 @@
 <template>
   <div class="c-app flex-row align-items-center" :class="{ 'c-dark-theme': $store.state.darkMode }">
     <CContainer>
+      <CAlert
+        v-if="$store.state.status == 'error'"
+        color="danger"
+        closeButton
+      >
+        Invalid Login Credentials
+      </CAlert>
       <CRow class="justify-content-center">
         <CCol md="8">
           <CCardGroup>
@@ -26,7 +33,9 @@
                   </CInput>
                   <CRow>
                     <CCol col="6" class="text-left">
-                      <CButton :disabled="disabled" color="primary" class="px-4" @click.prevent="login">Login</CButton>
+                      <CButton :disabled="disabled" color="primary" class="px-4" @click.prevent="login">
+                        <CSpinner color="secondary" size="sm" v-if="$store.state.status == 'loading'"/> Login
+                      </CButton>
                     </CCol>
                     <CCol col="6" class="text-right">
                       <CButton color="link" class="px-0">Forgot password?</CButton>
@@ -66,10 +75,13 @@ export default {
   methods:{
     login(){
       this.disabled = true
-      // const {email, password} = this.user
-      this.$store.dispatch('authRequest')
+      const {email, password} = this.user
+      this.$store.dispatch('authRequest', {email, password})
       .then(()=>{
         this.$router.push('/')
+      })
+      .catch(()=>{
+        this.disabled = false
       })
     }
   }

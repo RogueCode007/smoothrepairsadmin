@@ -1,7 +1,7 @@
 <template>
-  <CCardBody>
+  <CCardBody> 
     <CDataTable
-      :items="ordersData"
+      :items="ordersData.orders"
       :fields="fields"
       items-per-page-select
       :items-per-page="5"
@@ -11,6 +11,27 @@
       table-filter
       cleaner
     >
+      <template #date_created="{item}">
+        <td>{{item.date_created | formateDate}}</td>
+      </template>
+      <template #customername="{item}">
+        <td v-if="item.customer">
+          <router-link :to="{ name: 'customer', params: { id: item.customer._id }}">{{item.customer.fullname}}</router-link> 
+        </td>
+        <td v-else>No customer</td>
+      </template>
+      <template #customernumber="{item}">
+        <td v-if="item.customer">{{item.customer.phone}}</td>
+        <td v-else>None</td>
+      </template>
+      <template #customeremail="{item}">
+        <td v-if="item.customer">{{item.customer.email}}</td>
+        <td v-else>None</td>
+      </template>
+      <template #amount="{item}">
+        <td v-if="item.service">{{item.service.price}}</td>
+        <td v-else>None</td>
+      </template>
       <template #status="{item}">
         <td>
           <CBadge :color="getBadge(item.status)" style="padding: 8px">
@@ -20,7 +41,7 @@
       </template>
       <template #view="{item}">
         <td class="py-2">
-          <CButton size="sm" color="primary" class="ml-3" @click="showOrderModal(item)">
+          <CButton size="sm" color="info" class="ml-3" @click="showOrderModal(item)">
             View
           </CButton>
         </td>
@@ -47,29 +68,31 @@
       <CCol>
         <div>
           <strong>Order type</strong>
-          <p>{{order.service}}</p>
+          <p>{{order.description}}</p>
         </div>
         <div>
           <strong>Customer Name</strong>
-          <p>{{order.customer_name}}</p>
+          <p v-if="order.customer">{{order.customer.fullname}}</p>
+          <p v-else>No customer</p>
         </div>
         <div>
           <strong>Customer phone number</strong>
-          <p>{{order.customer_number}}</p>
+          <p v-if="order.customer">{{order.customer.phone}}</p>
+          <p v-else>None</p>
         </div>
       </CCol>
       <CCol>
         <div>
           <strong>Order date</strong>
-          <p>{{order.order_date}}</p>
+          <p>{{order.date_created | formateDate}}</p>
         </div>
         <div>
           <strong>Total amount</strong>
-          <p>#{{order.amount}}</p>
+          <p v-if='order.service'>#{{order.service.price}}</p>
         </div>
         <div v-if="order.serviceman != null">
           <strong>Serviceman:</strong>
-          <p>{{order.serviceman}}</p>
+          <p>{{order.serviceman.name}}</p>
         </div>
         <div v-else>
           <strong>Unassigned</strong>
@@ -79,10 +102,9 @@
             toggler-text="Assign Serviceman"
             color="primary"
             v-model="serviceman"
-            @change="assignServiceman($event)"
           >
-            <CDropdownItem v-for="serviceman in servicemen" :key="serviceman.id">{{serviceman}}</CDropdownItem>
-          </CDropdown>
+            <CDropdownItem v-for="serviceman in servicemenData.serviceman" :key="serviceman.id" @click="assignServiceman(serviceman)">{{serviceman.name}}</CDropdownItem>
+          </CDropdown> 
         </div>
       </CCol>
     </CRow>
@@ -90,18 +112,18 @@
         <CButton @click="orderModal = false" color="secondary">Cancel</CButton>
       </template>
     </CModal>
-  </CCardBody>
+  </CCardBody> 
 </template>
 
 <script>
-import ordersData from '@/views/users/OrderData'
-
+import axios from 'axios'
+import url from '@/main'
 const fields = [
-  { key: 'service', _style:'min-width:30%' },
-  'order_date',
-  { key: 'customer_name', _style:'min-width:15%;' },
-  { key: 'customer_number', _style:'min-width:15%;' },
-  { key: 'customer_address', _style:'min-width:15%;' },
+  { key: 'description', _style:'min-width:30%' },
+  {key: 'date_created', label: 'Order date'},
+  { key: 'customername', _style:'min-width:15%;', label: 'Customer Name' },
+  { key: 'customernumber', _style:'min-width:15%;', label: 'Customer Number' },
+  { key: 'customeremail', _style:'min-width:15%;' , label: 'Customer Email'},
   { 
     key: 'amount', 
     _style: 'min-width:1%'
@@ -113,10 +135,11 @@ const fields = [
 
 export default {
   data () {
-    return {
-      ordersData: ordersData.map((item, id) => { return {...item, id}}),
+    return {  
       fields,
       details: [],
+      servicemenData: {},
+      ordersData:{},
       collapseDuration: 0,
       dangerModal: false,
       orderModal: false,
@@ -125,28 +148,58 @@ export default {
       serviceman: ''
     }
   },
+  filters:{
+    formateDate(str){
+      var date = new Date(str);
+      var day = date.getDate();
+      var year = date.getFullYear();
+      var month = date.getMonth()+1;
+      var dateStr = year+"/"+month+"/"+day;
+      return dateStr
+    }
+  },
   methods: {
     getBadge (status) {
       switch (status) {
-        case 'Delivered': return 'success'
-        case 'Pending': return 'warning'
-        default: 'primary'
+        case 'success': return 'success'
+        case 'complete': return 'info'
+        case 'pending': return 'warning'
+        case 'error': return 'danger'
+        case 'picked': return 'secondary'
       }
     },
     showOrderModal(item){
       this.orderModal = true
       this.order = item;
     },
-    assignServiceman(event){
-      console.log(event.target.value)
-       console.log(this.serviceman);
-       console.log(this.order)
+    assignServiceman(serviceman){
+      console.log(serviceman)
+      console.log(this.order)
     },
     toggleDetails (item) {
       this.$set(this.ordersData[item.id], '_toggled', !item._toggled)
       this.collapseDuration = 300
       this.$nextTick(() => { this.collapseDuration = 0})
     }
+  },
+  beforeCreate(){
+    this.$store.state.loading = true
+    axios({url: `${url}/order`, method: 'GET'})
+    .then(res=>{
+      this.ordersData = res.data  
+      console.log(this.ordersData)
+    })
+  },
+  created(){
+    axios({url: `${url}/servicemen`, method: 'GET'})
+    .then(res=>{
+      this.servicemenData = res.data 
+      this.$store.state.loading = false
+      
+    })
   }
 }
 </script>
+<style scoped>
+
+</style>

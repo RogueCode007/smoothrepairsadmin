@@ -35,6 +35,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 const admins = [
     {name: 'Obiwan', email: 'obiwan@smoothrepairs.ng', service: 'generator'},
     {name: 'Obiwan', email: 'obiwan@smoothrepairs.ng', service: 'generator'},
@@ -61,6 +63,13 @@ export default {
       collapseDuration: 0,
       dangerModal: false
     }
+  },
+  beforeCreate(){
+    this.$store.state.loading = true;
+    axios.get(`${url}/users/allUsers`)
+    .then(res=>{
+      console.log(res.data)
+    })
   }
 
 }

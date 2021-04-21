@@ -9,28 +9,45 @@
           <CCardBody>
             <div>
               <strong>Name</strong>
-              <p>{{serviceman.name}}</p>
+              <p>{{servicemanData.serviceMen[0].name}}</p>
             </div>
             <div>
               <strong>Phone number</strong>
-              <p>{{serviceman.phone_number}}</p>
+              <p>{{servicemanData.serviceMen[0].phone}}</p>
             </div>
             <div>
               <strong>Address</strong>
-              <p>{{serviceman.address}}</p>
+              <p>{{servicemanData.serviceMen[0].phone}}</p>
             </div>
             <div>
               <strong>Status</strong>
-              <CBadge :color="getBadge(serviceman.status)" style="padding: 8px; margin-left: 10px">{{serviceman.status}}</CBadge>
+               <CBadge color="success" style="padding: 8px" class="ml-2" v-if="servicemanData.serviceMen[0].active_status">
+                  Active
+               </CBadge>
+               <CBadge color="secondary" style="padding: 8px" class="ml-2" v-else>
+                 Inactive
+               </CBadge>
             </div>
+            <CDropdown 
+              style="display: block; margin-top: 20px"
+              size="sm"
+              toggler-text="Change Status"
+              color="primary"
+            >
+            <CDropdownItem @click="changeServicemanStatus(true)">Active</CDropdownItem>
+            <CDropdownItem @click="changeServicemanStatus(false)">Inactive</CDropdownItem>
+          </CDropdown>
           </CCardBody>
         </CCard>
       </CCol>
       <CCol sm='12' md='6'>
         <CCard>
           <CCardHeader>Jobs</CCardHeader>
-          <CCardBody>
-            <CListGroup accent>
+          <!-- <CCardBody>
+            <CListGroup accent
+              serviceman.jobs-per-page='2'
+              pagination
+            >
               <CListGroupItem color="secondary" 
               v-for="job in serviceman.jobs" 
               :key="job.id"
@@ -40,7 +57,7 @@
               {{job.service}} for {{job.customer_name}} <router-link to='/orders/1'>view job</router-link>
               </CListGroupItem>
             </CListGroup>
-          </CCardBody>
+          </CCardBody> -->
         </CCard>
       </CCol>
 
@@ -49,30 +66,21 @@
 </template>
 
 <script>
-
+import axios from 'axios'
+import url from '@/main'
 export default {
   data(){
     return{
-      serviceman: {
-        name: 'Jide Francis',
-        phone_number: '08036738733',
-        address: 'Plot 256, Arike Ade Street, Downtown',
-        status: 'Active',
-        jobs: [
-          {'id':1, 'order_date': '2020/1/3','order_number': 234, 'customer_name': 'Francis Odeku', 'customer_number': '08467723987', 'status': 'Delivered', 'amount_paid': 3000, 'service': 'A/C repairs'},
-          {'id':2, 'order_date': '2020/12/15','order_number': 234, 'customer_name': 'Nakamato', 'customer_number': '08467723987', 'status': 'Pending', 'amount_paid': 3000, 'service': 'A/C repairs'},
-          {'id':3, 'order_date': '2021/02/23', 'order_number': 234, 'customer_name': 'Orichimaru', 'customer_number': '08467723987', 'status': 'Pending', 'amount_paid': 3000, 'service': 'A/C repairs'},
-          {'id':4, 'order_date': '2021/03/5', 'order_number': 234, 'customer_name': 'Kakashi', 'customer_number': '08467723987', 'status': 'Delivered', 'amount_paid': 3000, 'service': 'A/C repairs'}
-        ]
-      }
+      servicemanData: {},
+      
     }
   },
   methods:{
     getBadge(str){
       switch(str){
-        case 'Active':
+        case true:
         return 'primary'
-        case 'Inactive' :
+        case false :
          return 'secondary'
       }
     },
@@ -82,8 +90,35 @@ export default {
         return 'success'
         default: return 'warning'
       }
+    },
+    changeServicemanStatus(param){
+      let data = 
+        {
+          name: this.servicemanData.serviceMen[0].name,
+          phone: this.servicemanData.serviceMen[0].phone,
+          status: param
+        }
+      axios.put(`${url}/servicemen/${this.$route.params.id}`, data, {
+        headers:{
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res=>{
+        location.reload();
+      })
+      .catch(err=>{
+        console.log(err)
+      })
     }
-  }
+
+  },
+  beforeCreate(){
+    axios({url: `${url}/servicemen/${this.$route.params.id}`, method: 'GET'})
+    .then(res=>{
+      this.servicemanData = res.data
+      console.log(this.servicemanData)
+    })
+  },
 }
 </script>
 

@@ -10,6 +10,7 @@ const state = {
   darkMode: false,
   token: localStorage.getItem('user-token') || '',
   status: '',
+  loading: true
 }
 const getters = {
   isAuthenticated: state => !!state.token,
@@ -41,38 +42,36 @@ const mutations = {
   authError(state){
     state.status = 'error'
   },
+  
 }
 
 const actions = {
-  authRequest({commit, dispatch}, user){
+  authRequest({commit}, user){
     return new Promise((resolve, reject)=>{
-      // commit(authRequest)
-      // axios({url: 'auth', data: user, method: 'POST'})
-      // .then(res=>{
-      //   const token = res.data.token
-      //   //Store token in local storage
-      //   localStorage.setItem('user-token', token)
-      //   // Set token as deafult Authorization header for future requests
-      //   axios.defaults.headers.common['Authorization'] = token
-      //   commit('authSuccess', token)
-      //    dispatch(USER_REQUEST)
-      // resolve(res)
-      console.log('User logged in successfully')
-      resolve()
-      // })
+      commit('authRequest')
+      axios({url: 'http://192.241.131.11:11000/api/v1/admin/login', data: user, method: 'POST'})
+      .then(res=>{
+        const token = res.data.token
+        //Store token in local storage
+        localStorage.setItem('user-token', token)
+        // Set token as deafult Authorization header for future requests
+        axios.defaults.headers.common['Authorization'] = token
+        commit('authSuccess', token)
+        // dispatch(USER_REQUEST)
+        resolve(res)
+       })
       .catch(err =>  {
-        // commit('authError', err)
-        // //If auth fails, remove every possible user-token in local storage
-        // localStorage.removeItem('user-token')
+         commit('authError', err)
+        //If auth fails, remove every possible user-token in local storage
+        localStorage.removeItem('user-token')
         reject(err)
       })
     })
   },
   authLogout({commit, dispatch}){
     return new Promise((resolve, reject)=>{
-      // commit('authLogout')
-      // localStorage.removeItem('user-token')
-      // delete axios.defaults.headers.common['Authorization']
+      localStorage.removeItem('user-token')
+      delete axios.defaults.headers.common['Authorization']
       console.log('Logged out successfully')
       resolve()
     })

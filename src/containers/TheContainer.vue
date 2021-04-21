@@ -10,6 +10,7 @@
             <transition name="fade" mode="out-in">
               <router-view :key="$route.path"></router-view>
             </transition>
+            
           </CContainer>
         </main>
       </div>
@@ -24,13 +25,15 @@ import TheHeader from './TheHeader'
 import TheFooter from './TheFooter'
 import TheAside from './TheAside'
 
+
 export default {
   name: 'TheContainer',
   components: {
     TheSidebar,
     TheHeader,
     TheFooter,
-    TheAside
+    TheAside,
+    
   }
 }
 </script>

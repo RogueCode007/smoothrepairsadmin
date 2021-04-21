@@ -1,7 +1,7 @@
 <template>
   <CCardBody>
     <CDataTable
-      :items="customers"
+      :items="customersData.users"
       :fields="fields"
       items-per-page-select
       :items-per-page="5"
@@ -11,9 +11,26 @@
       table-filter
       cleaner
     >
-    <template #name="{item}">
+    <template #fullname="{item}">
       <td>
-        <router-link :to="{ name: 'customer', params: { id: item.id }}">{{item.name}}</router-link>
+        <router-link :to="{ name: 'customer', params: { id: item._id }}">{{item.fullname}}</router-link>
+      </td>
+    </template>
+    <template #date_created="{item}">
+      <td>
+        {{item.date_created | formateDate}}
+      </td>
+    </template>
+    <template #is_verified="{item}">
+      <td v-if="item.is_verified">
+        <CBadge :color="getBadge(item.is_verified)" style="padding: 8px">
+          Verified
+        </CBadge>
+      </td>
+      <td v-else>
+        <CBadge :color="getBadge(item.is_verified)" style="padding: 8px">
+          Unverified
+        </CBadge>
       </td>
     </template>
     </CDataTable>
@@ -21,43 +38,55 @@
 </template>
 
 <script>
-const customers = [
-  {id: 1, name: 'Obiwan Pelosi', number: '08097545678', no_of_orders: '5', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', date_joined: '2012/02/03', email: 'ststsdrsxd@gmail.com',  },
-  {id: 2, name: 'Obiwan Pelosi', number: '08097545678', no_of_orders: '5', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', date_joined: '2012/02/04', email: 'ststsdrsxd@gmail.com',  },
-  {id: 3, name: 'Obiwan Pelosi', number: '08097545678', no_of_orders: '5', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', date_joined: '2012/02/01', email: 'ststsdrsxd@gmail.com',  },
-  {id: 4, name: 'Obiwan Pelosi', number: '08097545678', no_of_orders: '5', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', date_joined: '2012/02/05', email: 'ststsdrsxd@gmail.com',  },
-  {id: 5, name: 'Obiwan Pelosi', number: '08097545678', no_of_orders: '5', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', date_joined: '2012/02/03', email: 'ststsdrsxd@gmail.com',  },
-  {id: 6, name: 'Obiwan Pelosi', number: '08097545678', no_of_orders: '5', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', date_joined: '2012/02/02', email: 'ststsdrsxd@gmail.com',  },
-  {id: 7, name: 'Obiwan Pelosi', number: '08097545678', no_of_orders: '5', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', date_joined: '2012/02/04', email: 'ststsdrsxd@gmail.com',  },
-  {id: 8, name: 'Obiwan Pelosi', number: '08097545678', no_of_orders: '5', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', date_joined: '2012/02/03', email: 'ststsdrsxd@gmail.com',  },
-  {id: 9, name: 'Obiwan Pelosi', number: '08097545678', no_of_orders: '5', address: 'Plot 567, Adekunle Ijaniki, Off Westside Road', date_joined: '2012/02/01', email: 'ststsdrsxd@gmail.com',  }
-  
-]
+import axios from 'axios'
+import url from '@/main'
 
 const fields = [
-  { key: 'name', _style:'min-width:30%' },
-  { key: 'number', label: 'Phone number', _style:'min-width:20%;' },
+  { key: 'fullname', _style:'min-width:30%' },
+  { key: 'phone', label: 'Phone number', _style:'min-width:20%;' },
   { key: 'address', _style:'min-width:20%;' },
   'email',
-  'no_of_orders',
+  // 'no_of_orders',
   
-  { key: 'date_joined', _style:'min-width:10%;' },
+  { key: 'date_created', _style:'min-width:10%;', label: 'Date joined' },
+  {key:'is_verified', label: 'Status'}
   
 ]
 
 export default {
   data () {
     return {
-      // ordersData: ordersData.map((item, id) => { return {...item, id}}),
-      customers: customers.map((item, index) => { return {...item, index}}),
       fields,
       details: [],
       collapseDuration: 0,
-    
+      customersData: {}
+    }
+  },
+  filters:{
+    formateDate(str){
+      var date = new Date(str);
+      var day = date.getDate();
+      var year = date.getFullYear();
+      var month = date.getMonth()+1;
+      var dateStr = year+"/"+month+"/"+day;
+      return dateStr
     }
   },
   methods: {
-    
+    getBadge (status) {
+      switch (status) {
+        case true: return 'success'
+        case false: return 'secondary'
+      }
+    }
+  },
+  beforeCreate(){
+    this.$store.state.loading = true;
+    axios.get(`${url}/users/allUsers`)
+    .then(res=>{
+      this.customersData = res.data
+      this.$store.state.loading = false
+    })
   }
 }
 </script>

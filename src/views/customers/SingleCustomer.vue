@@ -49,7 +49,7 @@
                 <div>
                   <p v-if="order.customer_name == null">Unsassigned</p>
                   <p v-else>Assigned to: <CLink to='/servicemen/1'>{{order.customer_name}}</CLink></p>
-                  <CLink to="/orders/2" style="display: block">View Orders</CLink>
+                  <CLink to="/orders/2" style="display: block">View Order</CLink>
                 </div>
               </div>
               </CListGroupItem>
