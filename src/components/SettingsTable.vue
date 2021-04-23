@@ -36,7 +36,7 @@
 
 <script>
 import axios from 'axios'
-
+import  url from '@/main'
 const admins = [
     {name: 'Obiwan', email: 'obiwan@smoothrepairs.ng', service: 'generator'},
     {name: 'Obiwan', email: 'obiwan@smoothrepairs.ng', service: 'generator'},
@@ -69,6 +69,7 @@ export default {
     axios.get(`${url}/users/allUsers`)
     .then(res=>{
       console.log(res.data)
+      this.$store.state.loading = false
     })
   }
 

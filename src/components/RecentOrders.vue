@@ -1,6 +1,5 @@
 <template>
   <CCardBody> 
-
     <CDataTable
       :items="ordersData.orders"
       :fields="fields"
@@ -91,7 +90,7 @@
             <CDropdownItem @click="changeOrderStatus('picked')">Picked</CDropdownItem>
             <CDropdownItem @click="changeOrderStatus('complete')">Complete</CDropdownItem>
             <CDropdownItem @click="changeOrderStatus('success')">Success</CDropdownItem>
-            <CDropdownItem @click="changeOrderStatus('false')">Error</CDropdownItem>
+            <CDropdownItem @click="changeOrderStatus('error')">Error</CDropdownItem>
           </CDropdown>
       </CCol>
       <CCol>

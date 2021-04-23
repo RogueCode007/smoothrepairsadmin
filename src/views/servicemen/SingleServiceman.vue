@@ -113,6 +113,7 @@ export default {
 
   },
   beforeCreate(){
+    this.$store.state.loading = false
     axios({url: `${url}/servicemen/${this.$route.params.id}`, method: 'GET'})
     .then(res=>{
       this.servicemanData = res.data

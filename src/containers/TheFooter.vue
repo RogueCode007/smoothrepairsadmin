@@ -7,7 +7,7 @@
     <div class="mfs-auto">
       <span class="mr-1" target="_blank">Copyright</span>
       <a href="https://coreui.io/vue">Smooth Repairs</a>
-      <span ml-1>All Rights Reserved</span>
+      <span ml-3>Built by Obiwan Pelosi</span>
     </div> 
   </CFooter>
 </template>
